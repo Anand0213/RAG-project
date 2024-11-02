@@ -1,0 +1,16 @@
+.syllabus-form {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .syllabus-form input {
+    margin: 5px;
+    padding: 8px;
+    width: 250px;
+  }
+  
+  .syllabus-form button {
+    margin-top: 10px;
+    padding: 10px 15px;
+  }
+  

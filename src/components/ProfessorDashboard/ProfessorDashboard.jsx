@@ -1,212 +1,229 @@
 import React, { useEffect, useState } from 'react';
 import './ProfessorDashboard.css';
+import { FaUserCircle, FaSignOutAlt, FaTimes } from 'react-icons/fa';
 
-function ProfessorDashboard({ handleLogout, username }) {
-  const [syllabiList, setSyllabiList] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [pdfUrl, setPdfUrl] = useState(""); // State for PDF URL
-  const [showPdfViewer, setShowPdfViewer] = useState(false); // State for controlling PDF viewer visibility
-  const [newSyllabus, setNewSyllabus] = useState({
-    course_id: "",
-    course_name: "",
-    department_id: "",
-    department_name: "",
-    syllabus_name: "",
-    created_by: username,
-    file: null,
-  });
+function ProfessorDashboard({ handleLogout }) {
+    const [syllabiList, setSyllabiList] = useState([]);
+    const [pdfUrl, setPdfUrl] = useState("");
+    const [showPdfViewer, setShowPdfViewer] = useState(false);
+    const [newSyllabus, setNewSyllabus] = useState({
+        course_id: "",
+        course_name: "",
+        department_id: "",
+        department_name: "",
+        syllabus_name: "",
+        created_by: "",
+        file: null,
+    });
+    const [activeTab, setActiveTab] = useState('add');
+    const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
+    const [filter, setFilter] = useState("");
 
-  // Function to fetch syllabi from the backend
-  const fetchSyllabi = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/get_syllabus');
-      const data = await response.json();
-      if (response.ok) {
-        const formattedSyllabi = data.map(syllabus => ({
-          ...syllabus,
-          _id: syllabus._id.toString(),
-        }));
-        setSyllabiList(formattedSyllabi);
-        setSuccessMessage("Syllabi fetched successfully!");
-        setErrorMessage("");
-      } else {
-        setErrorMessage(data.error);
-        setSuccessMessage("");
-      }
-    } catch (error) {
-      setErrorMessage("An error occurred while fetching syllabi.");
-      setSuccessMessage("");
-    }
-  };
+    const fetchSyllabi = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/get_syllabus');
+            const data = await response.json();
+            if (response.ok) {
+                const formattedSyllabi = data.map(syllabus => ({
+                    ...syllabus,
+                    _id: syllabus._id.toString(),
+                }));
+                setSyllabiList(formattedSyllabi);
+            }
+        } catch (error) {
+            console.error("An error occurred while fetching syllabi:", error);
+        }
+    };
 
-  useEffect(() => {
-    fetchSyllabi();
-  }, []);
-
-  // Handle new syllabus submission
-  const handleNewSyllabusSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('created_by', username);
-    for (const key in newSyllabus) {
-      formData.append(key, newSyllabus[key]);
-    }
-    try {
-      const response = await fetch('http://localhost:5000/add_syllabus', {
-        method: 'POST',
-        body: formData,
-      });
-      if (response.ok) {
-        setSuccessMessage("Syllabus added successfully!");
-        setErrorMessage("");
+    useEffect(() => {
+        const storedUsername = localStorage.getItem('username');
+        if (storedUsername) {
+            setNewSyllabus(prevState => ({
+                ...prevState,
+                created_by: storedUsername
+            }));
+        }
         fetchSyllabi();
-        setNewSyllabus({
-          course_id: "",
-          course_name: "",
-          department_id: "",
-          department_name: "",
-          syllabus_name: "",
-          created_by: username,
-          file: null,
-        });
-      } else {
-        const data = await response.json();
-        setErrorMessage(data.error);
-        setSuccessMessage("");
-      }
-    } catch (error) {
-      setErrorMessage("An error occurred while adding the syllabus.");
-      setSuccessMessage("");
-    }
-  };
+    }, []);
 
-  // Handle viewing a syllabus PDF
-  const handleViewSyllabus = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:5000/view_syllabus/pdf/${id}`);
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
-        setShowPdfViewer(true); // Show the PDF viewer
-      } else {
-        const data = await response.json();
-        setErrorMessage(data.error);
-        setSuccessMessage("");
-      }
-    } catch (error) {
-      setErrorMessage("An error occurred while fetching the syllabus PDF.");
-      setSuccessMessage("");
-    }
-  };
+    const handleNewSyllabusSubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        for (const key in newSyllabus) {
+            formData.append(key, newSyllabus[key]);
+        }
+        try {
+            const response = await fetch('http://localhost:5000/add_syllabus', {
+                method: 'POST',
+                body: formData,
+            });
+            if (response.ok) {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error("An error occurred while adding the syllabus:", error);
+        }
+    };
 
-  // Handle closing the PDF viewer
-  const handleClosePdfViewer = () => {
-    setPdfUrl(""); // Clear the PDF URL
-    setShowPdfViewer(false); // Hide the PDF viewer
-  };
+    const handleViewSyllabus = async (id) => {
+        try {
+            const response = await fetch(`http://localhost:5000/view_syllabus/pdf/${id}`);
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                setPdfUrl(url);
+                setShowPdfViewer(true);
+            }
+        } catch (error) {
+            console.error("An error occurred while fetching the syllabus PDF:", error);
+        }
+    };
 
-  // Handle deleting a syllabus
-  const handleDeleteSyllabus = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:5000/delete_syllabus/${id}`, { method: 'DELETE' });
-      if (response.ok) {
-        setSuccessMessage("Syllabus deleted successfully!");
-        setErrorMessage("");
-        fetchSyllabi();
-      } else {
-        const data = await response.json();
-        setErrorMessage(data.error);
-        setSuccessMessage("");
-      }
-    } catch (error) {
-      setErrorMessage("An error occurred while deleting the syllabus.");
-      setSuccessMessage("");
-    }
-  };
+    const handleClosePdfViewer = () => {
+        setPdfUrl("");
+        setShowPdfViewer(false);
+    };
 
-  return (
-    <div className="professor-dashboard">
-      <h2>Welcome, Professor!</h2>
-      <button onClick={handleLogout}>Logout</button>
+    const handleDeleteSyllabus = async () => {
+        const id = confirmDelete.id;
+        try {
+            const response = await fetch(`http://localhost:5000/delete_syllabus/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                fetchSyllabi();
+                setConfirmDelete({ open: false, id: null });
+            }
+        } catch (error) {
+            console.error("An error occurred while deleting the syllabus:", error);
+        }
+    };
 
-      <h3>Add Syllabus</h3>
-      <form onSubmit={handleNewSyllabusSubmit}>
-        <input
-          type="text"
-          placeholder="Course ID"
-          value={newSyllabus.course_id}
-          onChange={(e) => setNewSyllabus({ ...newSyllabus, course_id: e.target.value })}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Course Name"
-          value={newSyllabus.course_name}
-          onChange={(e) => setNewSyllabus({ ...newSyllabus, course_name: e.target.value })}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Department ID"
-          value={newSyllabus.department_id}
-          onChange={(e) => setNewSyllabus({ ...newSyllabus, department_id: e.target.value })}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Department Name"
-          value={newSyllabus.department_name}
-          onChange={(e) => setNewSyllabus({ ...newSyllabus, department_name: e.target.value })}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Syllabus Name"
-          value={newSyllabus.syllabus_name}
-          onChange={(e) => setNewSyllabus({ ...newSyllabus, syllabus_name: e.target.value })}
-          required
-        />
-        <input
-          type="file"
-          onChange={(e) => setNewSyllabus({ ...newSyllabus, file: e.target.files[0] })}
-          required
-        />
-        <button type="submit">Add Syllabus</button>
-      </form>
+    const filteredSyllabi = syllabiList.filter(syllabus => 
+        syllabus.syllabus_name.toLowerCase().includes(filter.toLowerCase()) ||
+        syllabus.course_id.toLowerCase().includes(filter.toLowerCase()) ||
+        syllabus.department_name.toLowerCase().includes(filter.toLowerCase())
+    );
 
-      {errorMessage && <p className="error-message">{errorMessage}</p>}
-      {successMessage && <p className="success-message">{successMessage}</p>}
+    return (
+        <div className="professor-dashboard">
+            <header className="header">
+                <nav className="navigation-menu">
+                    <button 
+                        className={activeTab === 'add' ? 'active' : ''} 
+                        onClick={() => setActiveTab('add')}
+                    >
+                        Add Syllabus
+                    </button>
+                    <button 
+                        className={activeTab === 'uploaded' ? 'active' : ''} 
+                        onClick={() => setActiveTab('uploaded')}
+                    >
+                        Uploaded Syllabus
+                    </button>
+                </nav>
+                <div className="user-info">
+                    <FaUserCircle size={30} />
+                    <span className="username">{newSyllabus.created_by}</span>
+                    <FaSignOutAlt 
+                        className="logout-icon" 
+                        size={30} 
+                        onClick={handleLogout} 
+                    />
+                </div>
+            </header>
 
-      <h3>Uploaded Syllabi</h3>
-      <div className="syllabi-list">
-        {syllabiList.length > 0 ? (
-          syllabiList.map((syllabus) => (
-            <div className="syllabus-card" key={syllabus._id}>
-              <h4>{syllabus.syllabus_name}</h4>
-              <p>Course ID: {syllabus.course_id}</p>
-              <p>Course Name: {syllabus.course_name}</p>
-              <p>Department: {syllabus.department_name}</p>
-              <p>Created By: {syllabus.created_by}</p>
-              <button onClick={() => handleViewSyllabus(syllabus._id)}>View PDF</button>
-              <button onClick={() => handleDeleteSyllabus(syllabus._id)}>Delete</button>
-            </div>
-          ))
-        ) : (
-          <p>No syllabi found.</p>
-        )}
-      </div>
+            {activeTab === 'add' && (
+                <div className="form-container">
+                    <h3>Add New Syllabus</h3>
+                    <form onSubmit={handleNewSyllabusSubmit}>
+                        <input 
+                            type="text" 
+                            placeholder="Course ID" 
+                            required 
+                            value={newSyllabus.course_id} 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, course_id: e.target.value })} 
+                        />
+                        <input 
+                            type="text" 
+                            placeholder="Course Name" 
+                            required 
+                            value={newSyllabus.course_name} 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, course_name: e.target.value })} 
+                        />
+                        <input 
+                            type="text" 
+                            placeholder="Department ID" 
+                            required 
+                            value={newSyllabus.department_id} 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, department_id: e.target.value })} 
+                        />
+                        <input 
+                            type="text" 
+                            placeholder="Department Name" 
+                            required 
+                            value={newSyllabus.department_name} 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, department_name: e.target.value })} 
+                        />
+                        <input 
+                            type="text" 
+                            placeholder="Syllabus Name" 
+                            required 
+                            value={newSyllabus.syllabus_name} 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, syllabus_name: e.target.value })} 
+                        />
+                        <input 
+                            type="file" 
+                            accept=".pdf" 
+                            required 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, file: e.target.files[0] })} 
+                        />
+                        <button type="submit">Add Syllabus</button>
+                    </form>
+                </div>
+            )}
 
-      {showPdfViewer && (
-        <div className="pdf-viewer">
-          <h3>PDF Viewer</h3>
-          <button onClick={handleClosePdfViewer} className="close-button">Close</button>
-          <iframe src={pdfUrl} width="100%" height="600px" title="PDF Viewer"></iframe>
+            {activeTab === 'uploaded' && (
+                <div>
+                    <h3>Uploaded Syllabus</h3>
+                    <input 
+                        type="text" 
+                        placeholder="Search Syllabus" 
+                        value={filter} 
+                        onChange={(e) => setFilter(e.target.value)} 
+                    />
+                    <div className="syllabi-grid">
+                        {filteredSyllabi.map(syllabus => (
+                            <div key={syllabus._id} className="syllabus-card">
+                                <h4>{syllabus.syllabus_name}</h4>
+                                <p>Course ID: {syllabus.course_id}</p>
+                                <p>Department: {syllabus.department_name}</p>
+                                <button className="view-button" onClick={() => handleViewSyllabus(syllabus._id)}>View</button>
+                                <button className="delete-button" onClick={() => setConfirmDelete({ open: true, id: syllabus._id })}>Delete</button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {showPdfViewer && (
+                <div className="pdf-viewer">
+                    <div className="pdf-viewer-content">
+                        <button className="close-button" onClick={handleClosePdfViewer}><FaTimes /></button>
+                        <iframe src={pdfUrl} title="Syllabus PDF"></iframe>
+                    </div>
+                </div>
+            )}
+
+            {confirmDelete.open && (
+                <div className="dialog-overlay">
+                    <div className="dialog">
+                        <h3>Are you sure you want to delete this syllabus?</h3>
+                        <button onClick={handleDeleteSyllabus}>Yes</button>
+                        <button onClick={() => setConfirmDelete({ open: false, id: null })}>No</button>
+                    </div>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 
 export default ProfessorDashboard;

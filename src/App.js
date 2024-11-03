@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Welcome from './components/Welcome/Welcome';
 import StudentLogin from './components/StudentLogin/StudentLogin';
 import ProfessorLogin from './components/ProfessorLogin/ProfessorLogin';
 import StudentDashboard from './components/StudentDashboard/StudentDashboard';
-import ProfessorDashboard from './components/ProfessorDashboard/ProfessorDashboard'; // Import the Professor Dashboard component
+import ProfessorDashboard from './components/ProfessorDashboard/ProfessorDashboard';
 
 function App() {
   const [userData, setUserData] = useState(null);
@@ -13,46 +13,68 @@ function App() {
   const [successMessage, setSuccessMessage] = useState("");
   const [loginDetails, setLoginDetails] = useState({ email: "", password: "" });
 
+  // Load user data from localStorage on component mount
+  useEffect(() => {
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+      // Navigate to the correct dashboard based on user type
+      setPage(JSON.parse(storedUserData).userType === "professor" ? "professorDashboard" : "studentDashboard");
+    }
+  }, []);
+
   // Navigation functions
   const navigateToStudent = () => setPage("studentLogin");
   const navigateToProfessor = () => setPage("professorLogin");
   const navigateBack = () => setPage("welcome");
   const handleLogout = () => {
-    setUserData(null);
-    setPage("welcome");
-  };
+    // Clear localStorage
+    localStorage.removeItem('userData');
+    localStorage.removeItem('username');
+    
+    window.location.reload();
+
+    // Redirect to login or welcome page
+    setPage("login");
+};
 
   // Handlers for user login
   const handleUserLogin = async (email, password) => {
     try {
-      const response = await fetch('http://localhost:5000/login_user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: email, password })
-      });
+        const response = await fetch('http://localhost:5000/login_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: email, password })
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (response.ok) {
-        setUserData(data.user);
-        setSuccessMessage("Login successful!");
-        setErrorMessage("");
+        if (response.ok) {
+            setUserData(data.user);
+            setSuccessMessage("Login successful!");
+            setErrorMessage("");
 
-        // Redirect based on user type
-        if (data.user.userType === "professor") {
-          setPage("professorDashboard"); // Navigate to Professor Dashboard
+            // Store user data in localStorage
+            localStorage.setItem('userData', JSON.stringify(data.user));
+            localStorage.setItem('username', data.user.username); // Store username
+            console.log(localStorage.getItem('username'))
+
+            // Redirect based on user type
+            if (data.user.userType === "professor") {
+                setPage("professorDashboard");
+            } else {
+                setPage("studentDashboard");
+            }
         } else {
-          setPage("studentDashboard"); // Navigate to Student Dashboard
+            setErrorMessage(data.error);
+            setSuccessMessage("");
         }
-      } else {
-        setErrorMessage(data.error);
-        setSuccessMessage("");
-      }
     } catch (error) {
-      setErrorMessage("An error occurred. Please try again.");
-      setSuccessMessage("");
+        setErrorMessage("An error occurred. Please try again.");
+        setSuccessMessage("");
     }
-  };
+};
+
 
   // Handler for user registration
   const handleUserRegistration = async (newUserData) => {
@@ -115,7 +137,7 @@ function App() {
         />
       )}
       {page === "studentDashboard" && <StudentDashboard user={userData} handleLogout={handleLogout} />}
-      {page === "professorDashboard" && <ProfessorDashboard user={userData} handleLogout={handleLogout} />} {/* Add Professor Dashboard */}
+      {page === "professorDashboard" && <ProfessorDashboard user={userData} handleLogout={handleLogout} />}
     </div>
   );
 }

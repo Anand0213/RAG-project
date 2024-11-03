@@ -106,10 +106,11 @@ function ProfessorDashboard({ handleLogout }) {
     };
 
     const filteredSyllabi = syllabiList.filter(syllabus => 
-        syllabus.syllabus_name.toLowerCase().includes(filter.toLowerCase()) ||
-        syllabus.course_id.toLowerCase().includes(filter.toLowerCase()) ||
-        syllabus.department_name.toLowerCase().includes(filter.toLowerCase())
-    );
+      syllabus.created_by === localStorage.getItem('username') && (
+          syllabus.syllabus_name.toLowerCase().includes(filter.toLowerCase()) 
+      )
+  );
+  
 
     const handleInvalidFileDialogClose = () => {
         setShowInvalidFileDialog(false); // Close the dialog

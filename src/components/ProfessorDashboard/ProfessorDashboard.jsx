@@ -5,16 +5,15 @@ function ProfessorDashboard({ handleLogout, username }) {
   const [syllabiList, setSyllabiList] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [selectedSyllabus, setSelectedSyllabus] = useState(null);
-  const [question, setQuestion] = useState("");
-  const [chatResponse, setChatResponse] = useState("");
+  const [pdfUrl, setPdfUrl] = useState(""); // State for PDF URL
+  const [showPdfViewer, setShowPdfViewer] = useState(false); // State for controlling PDF viewer visibility
   const [newSyllabus, setNewSyllabus] = useState({
     course_id: "",
     course_name: "",
     department_id: "",
     department_name: "",
     syllabus_name: "",
-    created_by: username, // Set created by to the professor's username
+    created_by: username,
     file: null,
   });
 
@@ -24,7 +23,11 @@ function ProfessorDashboard({ handleLogout, username }) {
       const response = await fetch('http://localhost:5000/get_syllabus');
       const data = await response.json();
       if (response.ok) {
-        setSyllabiList(data); // Assuming data is an array of syllabi
+        const formattedSyllabi = data.map(syllabus => ({
+          ...syllabus,
+          _id: syllabus._id.toString(),
+        }));
+        setSyllabiList(formattedSyllabi);
         setSuccessMessage("Syllabi fetched successfully!");
         setErrorMessage("");
       } else {
@@ -38,35 +41,34 @@ function ProfessorDashboard({ handleLogout, username }) {
   };
 
   useEffect(() => {
-    fetchSyllabi(); // Fetch syllabi when the component mounts
+    fetchSyllabi();
   }, []);
 
   // Handle new syllabus submission
   const handleNewSyllabusSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
+    formData.append('created_by', username);
     for (const key in newSyllabus) {
       formData.append(key, newSyllabus[key]);
     }
-
     try {
       const response = await fetch('http://localhost:5000/add_syllabus', {
         method: 'POST',
         body: formData,
       });
-
       if (response.ok) {
         setSuccessMessage("Syllabus added successfully!");
         setErrorMessage("");
-        fetchSyllabi(); // Refresh the syllabus list
-        setNewSyllabus({ 
-          course_id: "", 
-          course_name: "", 
-          department_id: "", 
-          department_name: "", 
-          syllabus_name: "", 
-          created_by: username, // Reset to professor's username
-          file: null 
+        fetchSyllabi();
+        setNewSyllabus({
+          course_id: "",
+          course_name: "",
+          department_id: "",
+          department_name: "",
+          syllabus_name: "",
+          created_by: username,
+          file: null,
         });
       } else {
         const data = await response.json();
@@ -79,6 +81,32 @@ function ProfessorDashboard({ handleLogout, username }) {
     }
   };
 
+  // Handle viewing a syllabus PDF
+  const handleViewSyllabus = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/view_syllabus/pdf/${id}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+        setShowPdfViewer(true); // Show the PDF viewer
+      } else {
+        const data = await response.json();
+        setErrorMessage(data.error);
+        setSuccessMessage("");
+      }
+    } catch (error) {
+      setErrorMessage("An error occurred while fetching the syllabus PDF.");
+      setSuccessMessage("");
+    }
+  };
+
+  // Handle closing the PDF viewer
+  const handleClosePdfViewer = () => {
+    setPdfUrl(""); // Clear the PDF URL
+    setShowPdfViewer(false); // Hide the PDF viewer
+  };
+
   // Handle deleting a syllabus
   const handleDeleteSyllabus = async (id) => {
     try {
@@ -86,7 +114,7 @@ function ProfessorDashboard({ handleLogout, username }) {
       if (response.ok) {
         setSuccessMessage("Syllabus deleted successfully!");
         setErrorMessage("");
-        fetchSyllabi(); // Refresh the syllabus list
+        fetchSyllabi();
       } else {
         const data = await response.json();
         setErrorMessage(data.error);
@@ -96,12 +124,6 @@ function ProfessorDashboard({ handleLogout, username }) {
       setErrorMessage("An error occurred while deleting the syllabus.");
       setSuccessMessage("");
     }
-  };
-
-  const handleQuestionSubmit = async () => {
-    // Your implementation for handling question submission to chat
-    // For example, send the selected syllabus and question to the backend
-    // Set chatResponse based on the backend response
   };
 
   return (
@@ -161,13 +183,14 @@ function ProfessorDashboard({ handleLogout, username }) {
       <div className="syllabi-list">
         {syllabiList.length > 0 ? (
           syllabiList.map((syllabus) => (
-            <div className="syllabus-card" key={syllabus.id}>
-              <h4>{syllabus.course_name}</h4>
+            <div className="syllabus-card" key={syllabus._id}>
+              <h4>{syllabus.syllabus_name}</h4>
               <p>Course ID: {syllabus.course_id}</p>
+              <p>Course Name: {syllabus.course_name}</p>
               <p>Department: {syllabus.department_name}</p>
               <p>Created By: {syllabus.created_by}</p>
-              <button onClick={() => setSelectedSyllabus(syllabus)}>View</button>
-              <button onClick={() => handleDeleteSyllabus(syllabus.id)}>Delete</button>
+              <button onClick={() => handleViewSyllabus(syllabus._id)}>View PDF</button>
+              <button onClick={() => handleDeleteSyllabus(syllabus._id)}>Delete</button>
             </div>
           ))
         ) : (
@@ -175,17 +198,11 @@ function ProfessorDashboard({ handleLogout, username }) {
         )}
       </div>
 
-      {selectedSyllabus && (
-        <div className="question-section">
-          <h3>Ask a Question about {selectedSyllabus.course_name}</h3>
-          <input
-            type="text"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Your question"
-          />
-          <button onClick={handleQuestionSubmit}>Submit</button>
-          <p>{chatResponse}</p>
+      {showPdfViewer && (
+        <div className="pdf-viewer">
+          <h3>PDF Viewer</h3>
+          <button onClick={handleClosePdfViewer} className="close-button">Close</button>
+          <iframe src={pdfUrl} width="100%" height="600px" title="PDF Viewer"></iframe>
         </div>
       )}
     </div>

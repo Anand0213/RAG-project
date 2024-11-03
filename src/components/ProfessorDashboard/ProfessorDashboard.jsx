@@ -108,73 +108,70 @@ function ProfessorDashboard({ handleLogout }) {
             <header className="header">
                 <nav className="navigation-menu">
                     <button 
-                        className={activeTab === 'add' ? 'active' : ''} 
-                        onClick={() => setActiveTab('add')}
+                        onClick={() => setActiveTab('add')} 
+                        className={activeTab === 'add' ? 'active' : ''}
                     >
                         Add Syllabus
                     </button>
                     <button 
-                        className={activeTab === 'uploaded' ? 'active' : ''} 
-                        onClick={() => setActiveTab('uploaded')}
+                        onClick={() => setActiveTab('uploaded')} 
+                        className={activeTab === 'uploaded' ? 'active' : ''}
                     >
                         Uploaded Syllabus
                     </button>
                 </nav>
                 <div className="user-info">
                     <FaUserCircle size={30} />
-                    <span className="username">{newSyllabus.created_by}</span>
-                    <FaSignOutAlt 
-                        className="logout-icon" 
-                        size={30} 
-                        onClick={handleLogout} 
-                    />
+                    <span className="username">{localStorage.getItem('username')}</span>
+                    <FaSignOutAlt className="logout-icon" size={30} onClick={handleLogout} />
+                    <span className="logout-text" onClick={handleLogout}>Logout</span>
                 </div>
             </header>
 
             {activeTab === 'add' && (
                 <div className="form-container">
-                    <h3>Add New Syllabus</h3>
+                    <h2>Add Syllabus</h2>
                     <form onSubmit={handleNewSyllabusSubmit}>
                         <input 
                             type="text" 
                             placeholder="Course ID" 
                             required 
                             value={newSyllabus.course_id} 
-                            onChange={(e) => setNewSyllabus({ ...newSyllabus, course_id: e.target.value })} 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, course_id: e.target.value })}
                         />
                         <input 
                             type="text" 
                             placeholder="Course Name" 
                             required 
                             value={newSyllabus.course_name} 
-                            onChange={(e) => setNewSyllabus({ ...newSyllabus, course_name: e.target.value })} 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, course_name: e.target.value })}
                         />
                         <input 
                             type="text" 
                             placeholder="Department ID" 
                             required 
                             value={newSyllabus.department_id} 
-                            onChange={(e) => setNewSyllabus({ ...newSyllabus, department_id: e.target.value })} 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, department_id: e.target.value })}
                         />
                         <input 
                             type="text" 
                             placeholder="Department Name" 
                             required 
                             value={newSyllabus.department_name} 
-                            onChange={(e) => setNewSyllabus({ ...newSyllabus, department_name: e.target.value })} 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, department_name: e.target.value })}
                         />
                         <input 
                             type="text" 
                             placeholder="Syllabus Name" 
                             required 
                             value={newSyllabus.syllabus_name} 
-                            onChange={(e) => setNewSyllabus({ ...newSyllabus, syllabus_name: e.target.value })} 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, syllabus_name: e.target.value })}
                         />
                         <input 
                             type="file" 
-                            accept=".pdf" 
                             required 
-                            onChange={(e) => setNewSyllabus({ ...newSyllabus, file: e.target.files[0] })} 
+                            accept="application/pdf" 
+                            onChange={(e) => setNewSyllabus({ ...newSyllabus, file: e.target.files[0] })}
                         />
                         <button type="submit">Add Syllabus</button>
                     </form>
@@ -183,20 +180,24 @@ function ProfessorDashboard({ handleLogout }) {
 
             {activeTab === 'uploaded' && (
                 <div>
-                    <h3>Uploaded Syllabus</h3>
+                    <h2>Uploaded Syllabus</h2>
                     <input 
                         type="text" 
-                        placeholder="Search Syllabus" 
-                        value={filter} 
-                        onChange={(e) => setFilter(e.target.value)} 
+                        placeholder="Search..." 
+                        className="search-bar"
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
                     />
                     <div className="syllabi-grid">
                         {filteredSyllabi.map(syllabus => (
                             <div key={syllabus._id} className="syllabus-card">
-                                <h4>{syllabus.syllabus_name}</h4>
+                                <h3>{syllabus.syllabus_name}</h3>
                                 <p>Course ID: {syllabus.course_id}</p>
-                                <p>Department: {syllabus.department_name}</p>
-                                <button className="view-button" onClick={() => handleViewSyllabus(syllabus._id)}>View</button>
+                                <p>Course Name: {syllabus.course_name}</p>
+                                <p>Department ID: {syllabus.department_id}</p>
+                                <p>Department Name: {syllabus.department_name}</p>
+                                <p>Created By: {syllabus.created_by}</p>
+                                <button className="view-button" onClick={() => handleViewSyllabus(syllabus._id)}>View PDF</button>
                                 <button className="delete-button" onClick={() => setConfirmDelete({ open: true, id: syllabus._id })}>Delete</button>
                             </div>
                         ))}
@@ -207,7 +208,9 @@ function ProfessorDashboard({ handleLogout }) {
             {showPdfViewer && (
                 <div className="pdf-viewer">
                     <div className="pdf-viewer-content">
-                        <button className="close-button" onClick={handleClosePdfViewer}><FaTimes /></button>
+                        <button className="close-button" onClick={handleClosePdfViewer}>
+                            <FaTimes />
+                        </button>
                         <iframe src={pdfUrl} title="Syllabus PDF"></iframe>
                     </div>
                 </div>
@@ -216,9 +219,9 @@ function ProfessorDashboard({ handleLogout }) {
             {confirmDelete.open && (
                 <div className="dialog-overlay">
                     <div className="dialog">
-                        <h3>Are you sure you want to delete this syllabus?</h3>
-                        <button onClick={handleDeleteSyllabus}>Yes</button>
-                        <button onClick={() => setConfirmDelete({ open: false, id: null })}>No</button>
+                        <p>Are you sure you want to delete this syllabus?</p>
+                        <button className="yes-button" onClick={handleDeleteSyllabus}>Yes</button>
+                        <button className="no-button" onClick={() => setConfirmDelete({ open: false, id: null })}>No</button>
                     </div>
                 </div>
             )}

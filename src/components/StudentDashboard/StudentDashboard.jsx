@@ -48,7 +48,7 @@ function StudentDashboard({ handleLogout }) {
     };
 
     const filteredSyllabi = syllabiList.filter(syllabus => 
-        syllabus.syllabus_name.toLowerCase().includes(filter.toLowerCase()) 
+        syllabus.syllabus_name.toLowerCase().includes(filter.toLowerCase())
     );
 
     const handleChat = (syllabusId) => {
@@ -58,15 +58,13 @@ function StudentDashboard({ handleLogout }) {
 
     return (
         <div className="student-dashboard">
-            <header className="header">
-    <div className="user-info">
-        <FaUserCircle size={30} />
-        <span className="username">{localStorage.getItem('username')}</span>
-        <FaSignOutAlt className="logout-icon" size={30} onClick={handleLogout} />
-        <span className="logout-text" onClick={handleLogout}>Logout</span>
-    </div>
-</header>
-
+            <header className="head">
+                <div className="user-info">
+                    <FaUserCircle size={30} />
+                    <span className="username">{localStorage.getItem('username')}</span>
+                    <FaSignOutAlt className="logout-icon" size={30} onClick={handleLogout} />
+                </div>
+            </header>
 
             <div>
                 <h2>Syllabus</h2>
@@ -87,7 +85,7 @@ function StudentDashboard({ handleLogout }) {
                             <p>Department Name: {syllabus.department_name}</p>
                             <p>Created By: {syllabus.created_by}</p>
                             <button className="view-button" onClick={() => handleViewSyllabus(syllabus._id)}>View PDF</button>
-                            <button className="chat-button" onClick={() => handleChat(syllabus._id)}>Chat</button> {/* Chat button */}
+                            <button className="chat-button" onClick={() => handleChat(syllabus._id)}>Chat</button>
                         </div>
                     ))}
                 </div>

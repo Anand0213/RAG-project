@@ -1,62 +1,74 @@
 .professor-login {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #fff;
+  max-width: 400px; /* Same width as StudentLogin */
+  margin: 50px auto; /* Centering the login form */
+  padding: 30px; /* Increased padding for a spacious feel */
+  background-color: #fff; /* White background */
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  position: relative; /* Allow absolute positioning for the icon */
 }
 
 .professor-login h2 {
-  margin-bottom: 20px;
+  margin-bottom: 30px; /* Increased bottom margin */
+  font-family: 'Arial', sans-serif; /* Updated font */
+  color: #333; /* Dark text for better readability */
 }
 
 .professor-login input {
   width: 100%;
-  padding: 10px;
-  margin: 10px 0;
+  padding: 12px; /* Increased padding */
+  margin: 10px 0; /* Consistent margin */
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 5px;
+  transition: border-color 0.3s; /* Smooth transition on focus */
+}
+
+.professor-login input:focus {
+  border-color: #007bff; /* Blue border on focus */
+  outline: none; /* Remove default outline */
 }
 
 .professor-login button {
   width: 100%;
-  padding: 10px;
-  background-color: #007bff;
+  padding: 12px; /* Increased padding */
+  background-color: #007bff; /* Different primary color */
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s; /* Smooth transition */
 }
 
-.professor-login button:hover {
-  background-color: #0069d9;
+.professor-login .toggle-button-container {
+  display: flex; /* Use flexbox for centering */
+  justify-content: center; /* Center the toggle button */
+  margin-top: 10px; /* Add margin above */
 }
 
-.professor-login .error-message,
+.professor-login .toggle-button {
+  background: none; /* No background */
+  color: #007bff; /* Blue color for toggle */
+  border: none; /* No border */
+  cursor: pointer;
+  text-align: center; /* Center text in the button */
+}
+
 .professor-login .success-message {
   margin-top: 10px;
+  color: green; /* Change the color to green for successful registrations */
+  font-weight: bold; /* Make it bold for emphasis */
 }
 
-.professor-login {
-  position: relative; /* Added to allow absolute positioning of the icon */
+.professor-login .error-message {
+  margin-top: 10px;
+  color: red; /* Error message in red */
+  font-weight: bold; /* Make it bold for emphasis */
 }
 
-.back-icon {
+.professor-login .back-icon {
   position: absolute;
   top: 10px;  /* Adjust as needed */
   left: 10px; /* Adjust as needed */
-  cursor: pointer; /* Change cursor to pointer for better UX */
-  fill: #000; /* Icon color */
-}
-.professor-login {
-  position: relative; /* Added to allow absolute positioning of the icon */
-}
-
-.back-icon {
-  position: absolute;
-  top: 10px;  /* Adjust as needed */
-  left: 10px; /* Adjust as needed */
-  cursor: pointer; /* Change cursor to pointer for better UX */
+  cursor: pointer; /* Pointer cursor */
   fill: #000; /* Icon color */
 }

@@ -3,9 +3,9 @@
     padding: 20px;
 }
 
-.header {
+.head {
     display: flex;
-    justify-content: flex-end; /* Align items to the right */
+    justify-content: flex-end;
     align-items: center;
     margin-bottom: 20px;
 }
@@ -22,12 +22,7 @@
 
 .logout-icon {
     cursor: pointer;
-    margin-left: 20px;
-}
-
-.logout-text {
-    cursor: pointer;
-    margin-left: 5px;
+    margin-left: 15px;
     color: #007bff;
 }
 

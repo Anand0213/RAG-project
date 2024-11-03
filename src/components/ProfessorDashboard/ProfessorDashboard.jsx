@@ -18,6 +18,7 @@ function ProfessorDashboard({ handleLogout }) {
     const [activeTab, setActiveTab] = useState('add');
     const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
     const [filter, setFilter] = useState("");
+    const [showInvalidFileDialog, setShowInvalidFileDialog] = useState(false); // New state for invalid file dialog
 
     const fetchSyllabi = async () => {
         try {
@@ -48,6 +49,12 @@ function ProfessorDashboard({ handleLogout }) {
 
     const handleNewSyllabusSubmit = async (e) => {
         e.preventDefault();
+        // Check if the file is a PDF
+        if (newSyllabus.file && newSyllabus.file.type !== "application/pdf") {
+            setShowInvalidFileDialog(true);
+            return;
+        }
+
         const formData = new FormData();
         for (const key in newSyllabus) {
             formData.append(key, newSyllabus[key]);
@@ -58,8 +65,9 @@ function ProfessorDashboard({ handleLogout }) {
                 body: formData,
             });
             if (response.ok) {
-                window.location.reload();
-            }
+              setActiveTab('uploaded'); // Navigate to the Uploaded Syllabus tab
+              fetchSyllabi(); // Fetch syllabi to update the list (optional, depending on your needs)
+           }
         } catch (error) {
             console.error("An error occurred while adding the syllabus:", error);
         }
@@ -102,6 +110,10 @@ function ProfessorDashboard({ handleLogout }) {
         syllabus.course_id.toLowerCase().includes(filter.toLowerCase()) ||
         syllabus.department_name.toLowerCase().includes(filter.toLowerCase())
     );
+
+    const handleInvalidFileDialogClose = () => {
+        setShowInvalidFileDialog(false); // Close the dialog
+    };
 
     return (
         <div className="professor-dashboard">
@@ -222,6 +234,15 @@ function ProfessorDashboard({ handleLogout }) {
                         <p>Are you sure you want to delete this syllabus?</p>
                         <button className="yes-button" onClick={handleDeleteSyllabus}>Yes</button>
                         <button className="no-button" onClick={() => setConfirmDelete({ open: false, id: null })}>No</button>
+                    </div>
+                </div>
+            )}
+
+            {showInvalidFileDialog && (
+                <div className="dialog-overlay">
+                    <div className="dialog">
+                        <p>Please upload a valid PDF file.</p>
+                        <button className="ok-button" onClick={handleInvalidFileDialogClose}>OK</button>
                     </div>
                 </div>
             )}

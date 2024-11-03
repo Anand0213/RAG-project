@@ -3,7 +3,8 @@ import './App.css';
 import Welcome from './components/Welcome/Welcome';
 import StudentLogin from './components/StudentLogin/StudentLogin';
 import ProfessorLogin from './components/ProfessorLogin/ProfessorLogin';
-import Home from './components/Home/Home';
+import StudentDashboard from './components/StudentDashboard/StudentDashboard';
+import ProfessorDashboard from './components/ProfessorDashboard/ProfessorDashboard'; // Import the Professor Dashboard component
 
 function App() {
   const [userData, setUserData] = useState(null);
@@ -15,7 +16,7 @@ function App() {
   // Navigation functions
   const navigateToStudent = () => setPage("studentLogin");
   const navigateToProfessor = () => setPage("professorLogin");
-  const navigateToHome = () => setPage("home");
+  const navigateBack = () => setPage("welcome");
   const handleLogout = () => {
     setUserData(null);
     setPage("welcome");
@@ -36,7 +37,13 @@ function App() {
         setUserData(data.user);
         setSuccessMessage("Login successful!");
         setErrorMessage("");
-        setPage("home");
+
+        // Redirect based on user type
+        if (data.user.userType === "professor") {
+          setPage("professorDashboard"); // Navigate to Professor Dashboard
+        } else {
+          setPage("studentDashboard"); // Navigate to Student Dashboard
+        }
       } else {
         setErrorMessage(data.error);
         setSuccessMessage("");
@@ -61,7 +68,6 @@ function App() {
       if (response.ok) {
         setSuccessMessage("Registration successful!");
         setErrorMessage("");
-        // Set login details for the next page
         setLoginDetails({ email: newUserData.email, password: newUserData.password });
 
         // Navigate to the appropriate login page based on userType
@@ -80,8 +86,6 @@ function App() {
     }
   };
 
-  const navigateBack = () => setPage("welcome");
-
   return (
     <div className="App">
       {page === "welcome" && (
@@ -97,7 +101,7 @@ function App() {
           errorMessage={errorMessage}
           successMessage={successMessage}
           navigateBack={navigateBack}
-          loginDetails={loginDetails} // Pass login details to StudentLogin
+          loginDetails={loginDetails}
         />
       )}
       {page === "professorLogin" && (
@@ -107,10 +111,11 @@ function App() {
           errorMessage={errorMessage}
           successMessage={successMessage}
           navigateBack={navigateBack}
-          loginDetails={loginDetails} // Pass login details to ProfessorLogin
+          loginDetails={loginDetails}
         />
       )}
-      {page === "home" && <Home user={userData} handleLogout={handleLogout} />}
+      {page === "studentDashboard" && <StudentDashboard user={userData} handleLogout={handleLogout} />}
+      {page === "professorDashboard" && <ProfessorDashboard user={userData} handleLogout={handleLogout} />} {/* Add Professor Dashboard */}
     </div>
   );
 }

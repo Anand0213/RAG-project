@@ -1,7 +1,7 @@
 import React from 'react';
-import './Home.css';
+import './StudentDashboard.css';
 
-function Home({ user, handleLogout }) {
+function StudentDashboard({ user, handleLogout }) {
   return (
     <div className="home">
       <h1>Welcome, {user.username}!</h1>
@@ -12,4 +12,4 @@ function Home({ user, handleLogout }) {
   );
 }
 
-export default Home;
+export default StudentDashboard;

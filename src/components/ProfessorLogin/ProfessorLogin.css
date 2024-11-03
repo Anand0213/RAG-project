@@ -49,3 +49,14 @@
   cursor: pointer; /* Change cursor to pointer for better UX */
   fill: #000; /* Icon color */
 }
+.professor-login {
+  position: relative; /* Added to allow absolute positioning of the icon */
+}
+
+.back-icon {
+  position: absolute;
+  top: 10px;  /* Adjust as needed */
+  left: 10px; /* Adjust as needed */
+  cursor: pointer; /* Change cursor to pointer for better UX */
+  fill: #000; /* Icon color */
+}

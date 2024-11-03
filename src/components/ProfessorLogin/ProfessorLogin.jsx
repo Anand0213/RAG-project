@@ -30,11 +30,12 @@ function ProfessorLogin({ handleUserLogin, handleUserRegistration, errorMessage,
   return (
     <div className="professor-login">
       <div className="back-icon" onClick={navigateBack}>
-        {/* SVG icon for back */}
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-          <path fill="currentColor" d="M15.75 18L10.5 12l5.25-6H9V3h9v3h-5.25z"/>
-        </svg>
-      </div>
+  {/* Updated SVG icon for back */}
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <path d="M19 11H7.83l5.59-5.59L13 4l-8 8 8 8 1.41-1.41L7.83 13H19z" />
+  </svg>
+</div>
+
       <h2>{isRegistering ? "Professor Registration" : "Professor Login"}</h2>
       <form onSubmit={handleSubmit}>
         {isRegistering && (

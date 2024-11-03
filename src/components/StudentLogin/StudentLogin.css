@@ -37,8 +37,7 @@
 .student-login .success-message {
   margin-top: 10px;
 }
-
-.student-login{
+.student-login {
   position: relative; /* Added to allow absolute positioning of the icon */
 }
 
